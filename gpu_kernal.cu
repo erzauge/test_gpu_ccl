@@ -36,6 +36,7 @@ __device__ void merge(int *L,int label1,int label2){
 
 
 __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width) {
+    extern __shared__ int sPixels[];
     int lineBase    = (blockIdx.y*blockDim.y+threadIdx.y)*width+ threadIdx.x;
     int distanceY   = 0;
     int distanceYm  = 0;
@@ -52,7 +53,26 @@ __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width) {
                 L[id]=id-distanceY;
             }
         }
-        //to be continud
+        if (threadIdx.x==0){
+            sPixels[threadIdx.y]=pixelsY;
+        } 
+        __syncthreads();
+        int pixelsYm    = threadIdx.y>0?sPixels[threadIdx.y-1]:0;
+        int pYm         = pixelsYm&(1>>threadIdx.y);
+        int sDistYm     = start_distance(pixelsYm,threadIdx.x);
+        if (threadIdx.x==0){
+            sDistY  = distanceY;
+            sDistYm = distanceYm;
+        }
+        if (pY && pYm && (sDistY==0 || sDistYm==0)){
+            int label1 = id - sDistY;
+            int label2 = id - width -sDistYm;
+            merge(L,label1,label2);
+        }
+        int d       = start_distance(pixelsYm,32);
+        distanceYm  = d+(d==32?distanceYm:0);
+        d           = start_distance(pixelsY,32);
+        distanceY   = d+(d==32?distanceY:0);
     }
 }
 
