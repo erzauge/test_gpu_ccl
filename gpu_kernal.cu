@@ -76,6 +76,26 @@ __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width) {
     }
 }
 
+__global__ void HA4_Strip_Merge(int *I,int *L, unsigned width,unsigned blockH){
+    int y = (blockIdx.y*blockDim.y+threadIdx.y)*blockH;
+    int x = (blockIdx.x*blockDim.x+threadIdx.x);
+    if (y>0){
+        int idY     = y*width+x;
+        int idYm    = idY-width;
+        int pY      = I[idY];
+        int pYm     = I[idYm];
+        int pixelsY = __ballot_sync(FULL_MASK,pY);
+        int pixelsYm= __ballot_sync(FULL_MASK,pYm);
+        if (pY && pYm){
+            int sDistY  = start_distance(pixelsY,threadIdx.x);
+            int sDistYm = start_distance(pixelsYm,threadIdx.x);
+            if (sDistY==0 || sDistYm==0){
+                merge(L,idY-sDistY,idYm-sDistYm);
+            }
+        }
+    }
+}
+
 //to be removed 
 int main(){
 
