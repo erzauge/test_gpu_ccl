@@ -1,4 +1,4 @@
-#define FULL_MASK 0xffffffff
+#include "gpu_kernal.h"
 
 __device__ int start_distance(int p,int x){
     return __clz(~(p<<(32-x)));
@@ -115,10 +115,4 @@ __global__ void HA4_Relabeling(int *I,int *L, unsigned width){
         L[id]=label;
     }
 
-}
-
-//to be removed 
-int main(){
-
-    return 0;
 }
