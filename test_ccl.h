@@ -1,6 +1,5 @@
 #pragma once
 
-#include "gpu_kernal.h"
 #include "Logging.hpp"
 #include <random>
 class test_ccl
@@ -15,5 +14,5 @@ public:
 	~test_ccl();
 
 	void Labeing();
-	void RandomImage();
+	void RandomImage(double p);
 };

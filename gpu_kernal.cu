@@ -1,4 +1,5 @@
 #include "gpu_kernal.h"
+#include <stdio.h>
 
 __device__ int start_distance(int p,int x){
     return __clz(~(p<<(32-x)));
