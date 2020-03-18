@@ -9,13 +9,15 @@ int main(int argc, char const *argv[])
 	/* code */
 	test_ccl a(4*32);
 	cudaProfilerStart();
-	a.RandomImage(0.5);
-	for (size_t i = 0; i < 500; i++)
+	// LOG(LOG_ALWAYS)<< "randome";
+	for (size_t i = 0; i < 10000; i++)
 	{
-		a.Labeing();
+		a.RandomImage(0.5);
+		a.ClusterSize();
 	}
+	// LOG(LOG_ALWAYS)<< "Labeling";
 	cudaProfilerStop();
-	a.freeGPU();
+	// a.PrintLabel();
 	
 	return 0;
 }

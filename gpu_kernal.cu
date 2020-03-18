@@ -58,8 +58,8 @@ __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width) {
             sPixels[threadIdx.y]=pixelsY;
         } 
         __syncthreads();
-        int pixelsYm    = threadIdx.y>0?sPixels[threadIdx.y-1]:0;
-        int pYm         = pixelsYm&(1>>threadIdx.y);
+        int pixelsYm    = (threadIdx.y>0)?sPixels[threadIdx.y-1]:0;
+        int pYm         = (pixelsYm>>threadIdx.x)&1;
         int sDistYm     = start_distance(pixelsYm,threadIdx.x);
         if (threadIdx.x==0){
             sDistY  = distanceY;
@@ -106,7 +106,7 @@ __global__ void HA4_Relabeling(int *I,int *L, unsigned width){
     int sDist =start_distance(pixels,threadIdx.x);
     int label = 0;
     if (p && sDist==0){
-        label = L[label];
+        label = L[id];
         while (label != L[label]){
             label = L[label];
         }
@@ -115,5 +115,26 @@ __global__ void HA4_Relabeling(int *I,int *L, unsigned width){
     if (p){
         L[id]=label;
     }
+    else{
+        L[id]=-1;
+    }
 
 }
+
+__global__ void HA4_ClusterSize(int *I,int *L, unsigned width,int *S){
+    int y = (blockIdx.y*blockDim.y+threadIdx.y);
+    int x = (blockIdx.x*blockDim.x+threadIdx.x);
+    int id = y*width+x;
+    int p =I[id];
+    int pixels =__ballot_sync(FULL_MASK,p);
+    int sDist = start_distance(pixels,threadIdx.x);
+    int count = end_distance(pixels,threadIdx.x);
+    if (p && sDist==0){
+        int label= L[id];
+        while (label!=L[label]){
+            label=L[label];
+        }
+        atomicAdd(&S[label],count);
+    }
+}
+

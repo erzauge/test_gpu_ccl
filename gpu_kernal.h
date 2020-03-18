@@ -8,3 +8,4 @@ __device__ void merge(int *L,int label1,int label2);
 __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width);
 __global__ void HA4_Strip_Merge(int *I,int *L, unsigned width,unsigned blockH);
 __global__ void HA4_Relabeling(int *I,int *L, unsigned width);
+__global__ void HA4_ClusterSize(int *I,int *L, unsigned width,int *S);
