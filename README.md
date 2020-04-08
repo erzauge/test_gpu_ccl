@@ -1,3 +1,4 @@
 # test_gpu_ccl
-recreation from
+newman and ziff alorithem to test gpu ccl from
+
 https://hal.archives-ouvertes.fr/hal-01923784
