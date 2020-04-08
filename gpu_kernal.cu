@@ -10,6 +10,7 @@ __device__ int end_distance(int p,int x){
 }
 
 __device__ void merge(int *L,int label1,int label2){
+    //find
     while (label1!=label2&&label1!=L[label1]){
         label1=L[label1];
     }
@@ -18,12 +19,15 @@ __device__ void merge(int *L,int label1,int label2){
         label2=L[label2];
     }
 
+    
     while (label1!=label2){
         if (label1<label2) {
+            //swap
             int swap = label1;
-            label2 = label1;
-            label1 = swap;
+            label1 = label2;
+            label2 = swap;
         }
+
         int label3 = atomicMin(&L[label1],label2);
         if (label1==label3){
             label1=label2;
@@ -32,7 +36,6 @@ __device__ void merge(int *L,int label1,int label2){
             label1=label3;
         }
     }
-    
 }
 
 
@@ -54,6 +57,7 @@ __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width) {
                 L[id]=id-distanceY;
             }
         }
+        __syncthreads();
         if (threadIdx.x==0){
             sPixels[threadIdx.y]=pixelsY;
         } 
@@ -78,9 +82,9 @@ __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width) {
 }
 
 __global__ void HA4_Strip_Merge(int *I,int *L, unsigned width,unsigned blockH){
-    int y = (blockIdx.y*blockDim.y+threadIdx.y)*blockH;
+    int y = (blockIdx.y*blockDim.y+threadIdx.y);
     int x = (blockIdx.x*blockDim.x+threadIdx.x);
-    if (y>0){
+    if (y>0&&y<width){
         int idY     = y*width+x;
         int idYm    = idY-width;
         int pY      = I[idY];
@@ -125,7 +129,7 @@ __global__ void HA4_ClusterSize(int *I,int *L, unsigned width,int *S){
     int y = (blockIdx.y*blockDim.y+threadIdx.y);
     int x = (blockIdx.x*blockDim.x+threadIdx.x);
     int id = y*width+x;
-    int p =I[id];
+    int p = I[id];
     int pixels =__ballot_sync(FULL_MASK,p);
     int sDist = start_distance(pixels,threadIdx.x);
     int count = end_distance(pixels,threadIdx.x);
@@ -134,7 +138,16 @@ __global__ void HA4_ClusterSize(int *I,int *L, unsigned width,int *S){
         while (label!=L[label]){
             label=L[label];
         }
+        if(count==0){
+            count=32-threadIdx.x;
+        }
         atomicAdd(&S[label],count);
     }
 }
 
+__global__ void SetMem2Value(int * write, int * id, int start, int stride,int value){
+    int x = (blockIdx.x*blockDim.x+threadIdx.x);
+    if(x<stride){
+        write[id[start+x]]=value;
+    }
+}

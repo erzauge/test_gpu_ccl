@@ -9,3 +9,4 @@ __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width);
 __global__ void HA4_Strip_Merge(int *I,int *L, unsigned width,unsigned blockH);
 __global__ void HA4_Relabeling(int *I,int *L, unsigned width);
 __global__ void HA4_ClusterSize(int *I,int *L, unsigned width,int *S);
+__global__ void SetMem2Value(int * write, int * id, int start, int stride,int value = 1);
