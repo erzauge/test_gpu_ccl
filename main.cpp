@@ -1,11 +1,14 @@
 #include "test_ccl.h"
 #include "NewmanZiff.h"
 #include "NewmanZiff_CPU.hpp"
+#include "CPUTimer.hpp"
+#include "GPUTimer.h"
 #include <cuda_profiler_api.h>
 
 #include <tclap/CmdLine.h>
 #include <vector>
 #include <iostream>
+ 
 
 #include "Logging.hpp"
 
@@ -28,17 +31,20 @@ int main(int argc, char const *argv[])
 		exit(2);
 	}
 	
-
+	double time=0;
 	int N=LArg.getValue()*LArg.getValue();
 	std::vector<double> sum((N)/strideArg.getValue()-1,0.);
 	std::vector<double> sum2((N)/strideArg.getValue()-1,0.);
 	if (CPUArg.getValue())
 	{
 		NewmanZiffCPU a(LArg.getValue(),strideArg.getValue());
-		cudaProfilerStart();
+		CPUTimer timer;
 		for (size_t i = 0; i < NArg.getValue(); i++)
 		{
+			timer.Start();
 			std::vector<int> r=a.iteration();
+			timer.Stop();
+			time+= timer.Elapsed();
 			for (int j = 0; j < r.size(); j++)
 			{
 				sum[j]+=r[j];
@@ -50,10 +56,14 @@ int main(int argc, char const *argv[])
 	else
 	{
 		NewmanZiff a(LArg.getValue(),strideArg.getValue());
+		GPUTimer timer;
 		cudaProfilerStart();
 		for (size_t i = 0; i < NArg.getValue(); i++)
 		{
+			timer.Start();
 			std::vector<int> r=a.iteration();
+			timer.Stop();
+			time+=timer.Elapsed();
 			for (int j = 0; j < r.size(); j++)
 			{
 				sum[j]+=r[j];
@@ -63,7 +73,7 @@ int main(int argc, char const *argv[])
 		}
 		cudaProfilerStop();
 	}
-	
+	std::cerr<<time/NArg.getValue()<<std::endl;
 	for (int i = 0; i < sum.size(); i++)
 	{
 		std::cout<<((double)(i+1)*strideArg.getValue())/N<<"\t"<<sum[i]/NArg.getValue()<<"\t"<<sum[i]/(NArg.getValue()*N)<<"\t"<<sum2[i]/(NArg.getValue())-(sum[i]*sum[i])/(NArg.getValue()*NArg.getValue())<<"\n";
