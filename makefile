@@ -6,14 +6,15 @@ obj = $(src_cpp:%.cpp=${path_obj}/%.o) $(src_cu:%.cu=${path_obj}/%.o)
 inc_c = -I tclap/include/ -I tools/src/
 lib_c = -Ltools -ltools 
 
+flags=--std=c++11 -O3
 test: $(obj)
-	nvcc -o $@ $^  ${lib_c}
+	nvcc -o $@ $^  ${lib_c} ${flags}
 
 ${path_obj}/%.o: %.cpp |${path_obj}
-	nvcc -c -o $@ $^ ${inc_c}
+	nvcc -c -o $@ $^ ${inc_c} ${flags}
 
 ${path_obj}/%.o: %.cu |${path_obj}
-	nvcc -c -o $@ $^
+	nvcc -c -o $@ $^ ${flags}
 
 ${path_obj}:
 	mkdir -p $@
