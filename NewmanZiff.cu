@@ -79,6 +79,7 @@ int NewmanZiff::GetBigestCluster(){
         LOG(LOG_ERROR)<< "clusterzie gone wrong  sum: "<<sum<<" it: "<<it;
     }
     LastError();
+    delete[] SizeH;
     return s_max;
 }
 
