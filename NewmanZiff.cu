@@ -56,8 +56,8 @@ int NewmanZiff::GetBigestCluster(){
 	dim3 perBlock1(32,32);
 	dim3 numBlock1(1,L/32);
     HA4_Strip_Labeling<<<numBlock1,perBlock1,sizeof(int)*32>>>(ImageD,LabelD,L);
-    dim3 perBlock2(32,32);
-	dim3 numBlock2(L/32,L/32);
+    dim3 perBlock2(32,(L/32)<32?L/32:32);
+	dim3 numBlock2(L/32,(L/32)<32?1:L/64);
     HA4_Strip_Merge<<<numBlock2,perBlock2>>>(ImageD,LabelD,L,32);
 	dim3 perBlock3(32,32);
 	dim3 numBlock3(L/32,L/32);

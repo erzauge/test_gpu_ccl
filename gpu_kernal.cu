@@ -82,7 +82,7 @@ __global__ void HA4_Strip_Labeling(int *I,int *L, unsigned width) {
 }
 
 __global__ void HA4_Strip_Merge(int *I,int *L, unsigned width,unsigned blockH){
-    int y = (blockIdx.y*blockDim.y+threadIdx.y);
+    int y = (blockIdx.y*blockDim.y+threadIdx.y)*32;
     int x = (blockIdx.x*blockDim.x+threadIdx.x);
     if (y>0&&y<width){
         int idY     = y*width+x;

@@ -1,3 +1,4 @@
+#!/bin/bash
 FLAG=${2}
 for i in $(seq 0 ${1})
 do
